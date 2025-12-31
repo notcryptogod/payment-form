@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Form</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 0;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Анимированный градиентный фон */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(
+                circle,
+                #2a2a2a 0%,
+                #1a1a1a 25%,
+                #151515 50%,
+                #1a1a1a 75%,
+                #2a2a2a 100%
+            );
+            animation: gradientShift 10s ease infinite;
+            z-index: 0;
+            opacity: 0.6;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            33% {
+                transform: translate(-15%, -15%) scale(1.1);
+            }
+            66% {
+                transform: translate(-30%, -20%) scale(0.95);
+            }
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+        }
+
+        /* Переливающиеся акценты */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(
+                circle at 20% 50%,
+                rgba(204, 251, 85, 0.15) 0%,
+                transparent 50%
+            ),
+            radial-gradient(
+                circle at 80% 80%,
+                rgba(204, 251, 85, 0.12) 0%,
+                transparent 50%
+            ),
+            radial-gradient(
+                circle at 50% 20%,
+                rgba(204, 251, 85, 0.1) 0%,
+                transparent 50%
+            );
+            animation: shimmer 6s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0%, 100% {
+                opacity: 0.4;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #CCFB55;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #999;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        label .required {
+            color: #CCFB55;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input::placeholder {
+            color: #666;
+        }
+
+        input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #CCFB55;
+            box-shadow: 0 0 0 3px rgba(204, 251, 85, 0.1);
+        }
+
+        /* Периоды подписки */
+        .subscription-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #CCFB55;
+        }
+
+        .subscription-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .subscription-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .subscription-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .subscription-card.selected {
+            border-color: #CCFB55;
+            background: rgba(204, 251, 85, 0.05);
+        }
+
+        .subscription-card.selected::after {
+            content: '✓';
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            background: #CCFB55;
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .subscription-period {
+            font-size: 16px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .subscription-price {
+            font-size: 18px;
+            font-weight: 600;
+            color: #CCFB55;
+            margin-right: 30px;
+        }
+
+        /* Загрузка файла */
+        .file-upload {
+            margin-bottom: 24px;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #CCFB55;
+            border-radius: 12px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(204, 251, 85, 0.02);
+        }
+
+        .file-upload-area:hover {
+            background: rgba(204, 251, 85, 0.05);
+            border-color: #CCFB55;
+        }
+
+        .file-upload-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            color: #CCFB55;
+        }
+
+        .file-upload-text {
+            font-size: 14px;
+            color: #CCFB55;
+            margin-bottom: 8px;
+        }
+
+        .file-upload-hint {
+            font-size: 12px;
+            color: #CCFB55;
+            opacity: 0.7;
+        }
+
+        .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .file-name {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #CCFB55;
+            text-align: center;
+        }
+
+        /* Чекбокс согласия */
+        .agreement {
+            margin-bottom: 24px;
+        }
+
+        .agreement label {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .agreement input[type="checkbox"] {
+            margin-right: 12px;
+            margin-top: 2px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #CCFB55;
+        }
+
+        .agreement a {
+            color: #CCFB55;
+            text-decoration: none;
+            border-bottom: 1px solid #CCFB55;
+        }
+
+        .agreement a:hover {
+            opacity: 0.8;
+        }
+
+        /* CAPTCHA */
+        .captcha-section {
+            margin-bottom: 32px;
+        }
+
+        .captcha-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(204, 251, 85, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .captcha-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .captcha-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .captcha-checkbox-wrapper input[type="checkbox"] {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #CCFB55;
+            margin: 0;
+        }
+
+        .captcha-text {
+            font-size: 16px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .captcha-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .captcha-icon {
+            margin-bottom: 4px;
+        }
+
+        .captcha-brand {
+            font-size: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .captcha-links {
+            font-size: 8px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .captcha-links a {
+            text-decoration: none;
+            font-size: 8px;
+        }
+
+        .captcha-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* reCAPTCHA */
+        .recaptcha-wrapper {
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Кнопка */
+        .submit-button {
+            width: 100%;
+            padding: 18px 32px;
+            background: #CCFB55;
+            border: none;
+            border-radius: 50px;
+            color: #000000;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 4px 20px rgba(204, 251, 85, 0.3);
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(204, 251, 85, 0.4);
+        }
+
+        .submit-button:active {
+            transform: translateY(0);
+        }
+
+        .submit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .submit-button::after {
+            content: '→';
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .error-message {
+            background: rgba(255, 59, 48, 0.1);
+            border: 1px solid rgba(255, 59, 48, 0.3);
+            color: #ff3b30;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-screen {
+            display: none;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .success-screen.show {
+            display: block;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #CCFB55;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: #000;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #CCFB55;
+        }
+
+        .success-text {
+            color: #999;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Подтверждение оплаты</h1>
+            <p>Заполните форму ниже</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <form id="paymentForm">
+            <!-- Telegram Username -->
+            <div class="form-group">
+                <label>
+                    Telegram Username
+                    <span class="required">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    name="telegram_username" 
+                    id="telegram_username"
+                    placeholder="@username" 
+                    required
+                    readonly
+                >
+            </div>
+
+            <!-- Discord Username -->
+            <div class="form-group">
+                <label>
+                    Discord Username
+                    <span class="required">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    name="discord_username" 
+                    id="discord_username"
+                    placeholder="@username" 
+                    required
+                >
+            </div>
+
+            <!-- Периоды подписки -->
+            <div class="subscription-section">
+                <div class="section-title">Периоды подписки</div>
+                <div class="subscription-options">
+                    <div class="subscription-card selected" data-period="1" data-price="36">
+                        <span class="subscription-period">1 месяц</span>
+                        <span class="subscription-price">$36</span>
+                    </div>
+                    <div class="subscription-card" data-period="12" data-price="250">
+                        <span class="subscription-period">12 месяцев</span>
+                        <span class="subscription-price">$250</span>
+                    </div>
+                </div>
+                <input type="hidden" name="subscription_period" id="subscription_period" value="1">
+                <input type="hidden" name="subscription_price" id="subscription_price" value="36">
+            </div>
+
+            <!-- Загрузка файла -->
+            <div class="file-upload">
+                <label class="section-title">Скриншот оплаты <span class="required">*</span></label>
+                <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div class="file-upload-icon">↑</div>
+                    <div class="file-upload-text">Выберите или перетащите файл</div>
+                    <div class="file-upload-hint">Файл не более 10 МБ</div>
+                    <input type="file" id="fileInput" accept="image/*,.pdf" required>
+                </div>
+                <div class="file-name" id="fileName"></div>
+            </div>
+
+            <!-- Согласие с условиями -->
+            <div class="agreement">
+                <label>
+                    <input type="checkbox" name="agreement" required>
+                    <span>
+                        Я подтверждаю, что ознакомился(ась) с условиями 
+                        <a href="#" target="_blank">Пользовательского соглашения</a>
+                    </span>
+                </label>
+            </div>
+
+            <!-- CAPTCHA -->
+            <div class="captcha-section">
+                <div class="captcha-box">
+                    <div class="captcha-content">
+                        <label class="captcha-checkbox-wrapper">
+                            <input type="checkbox" id="captchaCheck" required>
+                            <span class="captcha-checkmark"></span>
+                            <span class="captcha-text">Я не робот</span>
+                        </label>
+                        <div class="captcha-logo">
+                            <div class="captcha-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#CCFB55"/>
+                                    <path d="M2 17L12 22L22 17" stroke="#CCFB55" stroke-width="2"/>
+                                    <path d="M2 12L12 17L22 12" stroke="#CCFB55" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <div class="captcha-brand">
+                                <span style="color: #CCFB55; font-weight: 700;">re</span><span style="color: #fff;">CAPTCHA</span>
+                            </div>
+                            <div class="captcha-links">
+                                <a href="#" style="color: #CCFB55;">Конфиденциальность</a>
+                                <span style="color: #666;"> - </span>
+                                <a href="#" style="color: #CCFB55;">Условия</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопка отправки -->
+            <button type="submit" class="submit-button" id="submitBtn">
+                Подтвердить платеж
+            </button>
+        </form>
+
+        <div class="success-screen" id="successScreen">
+            <div class="checkmark">✓</div>
+            <div class="success-title">Готово!</div>
+            <div class="success-text">
+                Ваша заявка отправлена.<br>
+                Подписка будет активирована в ближайшее время.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram WebApp
+        let tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand();
+            tg.ready();
+            
+            // Автозаполнение Telegram username
+            const telegramUser = tg.initDataUnsafe?.user;
+            if (telegramUser?.username) {
+                document.getElementById('telegram_username').value = '@' + telegramUser.username;
+            }
+
+            // Автозаполнение Discord (если есть в данных)
+            // Здесь можно добавить логику получения Discord username
+        }
+
+        // Выбор периода подписки
+        const subscriptionCards = document.querySelectorAll('.subscription-card');
+        subscriptionCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Убираем выделение со всех карточек
+                subscriptionCards.forEach(c => c.classList.remove('selected'));
+                
+                // Выделяем выбранную
+                this.classList.add('selected');
+                
+                // Сохраняем значения
+                const period = this.dataset.period;
+                const price = this.dataset.price;
+                document.getElementById('subscription_period').value = period;
+                document.getElementById('subscription_price').value = price;
+            });
+        });
+
+        // Загрузка файла
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Проверка размера (10 МБ)
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('Файл слишком большой! Максимум 10 МБ');
+                    fileInput.value = '';
+                    fileName.textContent = '';
+                    return;
+                }
+                fileName.textContent = '📎 ' + file.name;
+            }
+        });
+
+        // Drag and drop для файла
+        const uploadArea = document.querySelector('.file-upload-area');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#CCFB55';
+            uploadArea.style.background = 'rgba(204, 251, 85, 0.1)';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#CCFB55';
+            uploadArea.style.background = 'rgba(204, 251, 85, 0.02)';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#CCFB55';
+            uploadArea.style.background = 'rgba(204, 251, 85, 0.02)';
+            
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                fileInput.files = e.dataTransfer.files;
+                const event = new Event('change');
+                fileInput.dispatchEvent(event);
+            }
+        });
+
+        // Отправка формы
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const errorMessage = document.getElementById('errorMessage');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            // Проверка CAPTCHA
+            const captchaCheck = document.getElementById('captchaCheck');
+            if (!captchaCheck.checked) {
+                errorMessage.textContent = 'Пожалуйста, подтвердите, что вы не робот';
+                errorMessage.classList.add('show');
+                return;
+            }
+
+            errorMessage.classList.remove('show');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Отправка...';
+
+            // Собираем данные формы
+            const formData = new FormData(this);
+            
+            // Здесь будет логика отправки в Tally
+            // Пока показываем успех
+            setTimeout(() => {
+                document.getElementById('paymentForm').style.display = 'none';
+                document.getElementById('successScreen').classList.add('show');
+                
+                if (tg) {
+                    tg.showAlert('Заявка отправлена!');
+                    setTimeout(() => tg.close(), 3000);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
