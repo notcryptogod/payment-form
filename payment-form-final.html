@@ -758,6 +758,7 @@
                 
                 if (response.ok) {
                     // Успех!
+                    errorMessage.classList.remove('show'); // Скрываем ошибку
                     document.getElementById('paymentForm').style.display = 'none';
                     document.getElementById('successScreen').classList.add('show');
                     
