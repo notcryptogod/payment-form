@@ -50,18 +50,12 @@ export default async function handler(req, res) {
     const FIELD_IDS = {
       telegram_username: '6afa96e6-4e58-4c21-849f-8898b6171efe',
       discord_username: 'e4d19d6e-886b-4988-843b-70ee89597380',
-      subscription_period: '881b8b96-30ab-40d0-ba08-1f17720ef37e',
+      subscription_period: 'b3c6c52b-3390-42e1-b70b-04158f2e8f4d', // Текстовое поле
       agreement: 'df21de76-365e-437f-969e-fdf55b3a4b43',
       file_upload: '0c6c7732-f22b-437c-a814-614f5266ac89'
     };
 
-    // Получаем ID опции периода подписки
-    const PERIOD_OPTIONS = {
-      '1 месяцев': 'f2e1769c-659d-45af-8e70-df947ea4aa91',
-      '12 месяцев': '571b2393-9198-45a8-b6be-8f532715718a' // Нужно найти реальный ID
-    };
-
-    const AGREEMENT_ID = '571b2393-9198-45a8-b6be-8f532715718a';
+    const AGREEMENT_ID = 'ecb1d79a-a60f-4588-9652-5b89b8a74fc5';
 
     // Шаг 1: Загружаем файл в Tally
     let fileId = null;
@@ -107,11 +101,8 @@ export default async function handler(req, res) {
     // Discord username
     responses[FIELD_IDS.discord_username] = discord_username;
     
-    // Subscription period (как массив с ID опции)
-    const periodId = PERIOD_OPTIONS[subscription_period];
-    if (periodId) {
-      responses[FIELD_IDS.subscription_period] = [periodId];
-    }
+    // Subscription period (текст)
+    responses[FIELD_IDS.subscription_period] = subscription_period;
     
     // Agreement checkbox
     responses[FIELD_IDS.agreement] = [AGREEMENT_ID];
