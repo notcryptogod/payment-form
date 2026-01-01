@@ -1,6 +1,10 @@
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 
+// Telegram Bot Configuration
+const TELEGRAM_BOT_TOKEN = '8383508734:AAGEu6EUNTJHnHC4oJG1drqseBemLZ7DPas';
+const TELEGRAM_CHAT_ID = '460176717'; // Your Telegram ID
+
 export default async function handler(req, res) {
   // Разрешаем CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -57,34 +61,51 @@ export default async function handler(req, res) {
 
     const AGREEMENT_ID = 'ecb1d79a-a60f-4588-9652-5b89b8a74fc5';
 
-    // Шаг 1: Загружаем файл в Tally
-    let fileId = null;
+    // Шаг 1: Отправляем файл и данные в Telegram
+    let telegramMessageSent = false;
     
     if (file && file.data) {
       try {
         const fileBuffer = Buffer.from(file.data, 'base64');
         
-        const fileForm = new FormData();
-        fileForm.append('file', fileBuffer, {
+        // Формируем сообщение
+        const message = `💰 *Новая заявка на оплату!*
+
+📱 *Telegram:* ${telegram_username}
+🎮 *Discord:* ${discord_username}
+📅 *Период:* ${subscription_period}
+💵 *Цена:* ${subscription_price}
+
+⏰ *Дата:* ${new Date(submitted_at).toLocaleString('ru-RU')}`;
+
+        // Отправляем фото с подписью в Telegram
+        const telegramForm = new FormData();
+        telegramForm.append('chat_id', TELEGRAM_CHAT_ID);
+        telegramForm.append('photo', fileBuffer, {
           filename: file.name,
           contentType: file.type
         });
+        telegramForm.append('caption', message);
+        telegramForm.append('parse_mode', 'Markdown');
 
-        const uploadResponse = await fetch('https://api.tally.so/upload', {
-          method: 'POST',
-          body: fileForm,
-          headers: fileForm.getHeaders()
-        });
+        const telegramResponse = await fetch(
+          `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`,
+          {
+            method: 'POST',
+            body: telegramForm,
+            headers: telegramForm.getHeaders()
+          }
+        );
 
-        if (uploadResponse.ok) {
-          const uploadData = await uploadResponse.json();
-          fileId = uploadData.id;
-          console.log('File uploaded:', fileId);
+        if (telegramResponse.ok) {
+          telegramMessageSent = true;
+          console.log('✅ Telegram notification sent');
         } else {
-          console.error('File upload failed:', await uploadResponse.text());
+          const errorText = await telegramResponse.text();
+          console.error('❌ Telegram error:', errorText);
         }
-      } catch (fileError) {
-        console.error('File upload error:', fileError);
+      } catch (telegramError) {
+        console.error('❌ Telegram send error:', telegramError);
       }
     }
 
@@ -107,15 +128,7 @@ export default async function handler(req, res) {
     // Agreement checkbox
     responses[FIELD_IDS.agreement] = [AGREEMENT_ID];
     
-    // File upload
-    if (fileId) {
-      responses[FIELD_IDS.file_upload] = [{
-        id: fileId,
-        name: file.name,
-        mimeType: file.type,
-        size: file.data.length
-      }];
-    }
+    // Note: File is sent to Telegram, not Tally
 
     // Данные для отправки в Tally
     const tallyPayload = {
@@ -152,13 +165,15 @@ export default async function handler(req, res) {
     if (tallyResponse.ok || tallyResponse.status === 204) {
       return res.status(200).json({ 
         success: true, 
-        message: 'Data sent to Tally successfully' 
+        message: 'Data sent to Tally successfully',
+        telegram_sent: telegramMessageSent
       });
     } else {
       return res.status(500).json({ 
         success: false, 
         error: 'Failed to send to Tally',
-        details: tallyText
+        details: tallyText,
+        telegram_sent: telegramMessageSent
       });
     }
 
