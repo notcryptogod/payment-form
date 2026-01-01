@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Form</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <style>
         * {
             margin: 0;
@@ -313,80 +314,19 @@
         /* CAPTCHA */
         .captcha-section {
             margin-bottom: 32px;
-        }
-
-        .captcha-box {
-            background: rgba(255, 255, 255, 0.03);
-            border: 2px solid rgba(204, 251, 85, 0.3);
-            border-radius: 12px;
-            padding: 20px;
-        }
-
-        .captcha-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .captcha-checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            flex: 1;
-        }
-
-        .captcha-checkbox-wrapper input[type="checkbox"] {
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            accent-color: #CCFB55;
-            margin: 0;
-        }
-
-        .captcha-text {
-            font-size: 16px;
-            color: #fff;
-            font-weight: 500;
-        }
-
-        .captcha-logo {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
-        }
-
-        .captcha-icon {
-            margin-bottom: 4px;
-        }
-
-        .captcha-brand {
-            font-size: 10px;
-            letter-spacing: 0.5px;
-        }
-
-        .captcha-links {
-            font-size: 8px;
-            display: flex;
-            gap: 4px;
-        }
-
-        .captcha-links a {
-            text-decoration: none;
-            font-size: 8px;
-        }
-
-        .captcha-links a:hover {
-            text-decoration: underline;
-        }
-
-        /* reCAPTCHA */
-        .recaptcha-wrapper {
-            margin-bottom: 32px;
             display: flex;
             justify-content: center;
+        }
+
+        .g-recaptcha {
+            transform: scale(0.95);
+            transform-origin: center;
+        }
+
+        @media (max-width: 400px) {
+            .g-recaptcha {
+                transform: scale(0.85);
+            }
         }
 
         /* Кнопка */
@@ -556,39 +496,14 @@
                     <input type="checkbox" name="agreement" required>
                     <span>
                         Я подтверждаю, что ознакомился(ась) с условиями 
-                        <a href="#" target="_blank">Пользовательского соглашения</a>
+                        <a href="https://notcryptogod.github.io/payment-form/user-agreement.pdf" target="_blank" rel="noopener noreferrer">Пользовательского соглашения</a>
                     </span>
                 </label>
             </div>
 
             <!-- CAPTCHA -->
             <div class="captcha-section">
-                <div class="captcha-box">
-                    <div class="captcha-content">
-                        <label class="captcha-checkbox-wrapper">
-                            <input type="checkbox" id="captchaCheck" required>
-                            <span class="captcha-checkmark"></span>
-                            <span class="captcha-text">Я не робот</span>
-                        </label>
-                        <div class="captcha-logo">
-                            <div class="captcha-icon">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                                    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#CCFB55"/>
-                                    <path d="M2 17L12 22L22 17" stroke="#CCFB55" stroke-width="2"/>
-                                    <path d="M2 12L12 17L22 12" stroke="#CCFB55" stroke-width="2"/>
-                                </svg>
-                            </div>
-                            <div class="captcha-brand">
-                                <span style="color: #CCFB55; font-weight: 700;">re</span><span style="color: #fff;">CAPTCHA</span>
-                            </div>
-                            <div class="captcha-links">
-                                <a href="#" style="color: #CCFB55;">Конфиденциальность</a>
-                                <span style="color: #666;"> - </span>
-                                <a href="#" style="color: #CCFB55;">Условия</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div class="g-recaptcha" data-sitekey="6LeBeD0sAAAAABRwQOTsp6PGEEDSjm3jq5AVsZPC" data-theme="dark"></div>
             </div>
 
             <!-- Кнопка отправки -->
@@ -694,9 +609,9 @@
             const errorMessage = document.getElementById('errorMessage');
             const submitBtn = document.getElementById('submitBtn');
             
-            // Проверка CAPTCHA
-            const captchaCheck = document.getElementById('captchaCheck');
-            if (!captchaCheck.checked) {
+            // Проверка Google reCAPTCHA
+            const captchaResponse = grecaptcha.getResponse();
+            if (!captchaResponse) {
                 errorMessage.textContent = 'Пожалуйста, подтвердите, что вы не робот';
                 errorMessage.classList.add('show');
                 return;
