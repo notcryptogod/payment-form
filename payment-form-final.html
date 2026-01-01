@@ -757,8 +757,12 @@
                 });
                 
                 if (response.ok) {
-                    // Успех!
-                    errorMessage.classList.remove('show'); // Скрываем ошибку
+                    // Успех! Принудительно скрываем все ошибки
+                    errorMessage.style.display = 'none';
+                    errorMessage.classList.remove('show');
+                    errorMessage.textContent = '';
+                    
+                    // Показываем успех
                     document.getElementById('paymentForm').style.display = 'none';
                     document.getElementById('successScreen').classList.add('show');
                     
