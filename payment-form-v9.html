@@ -493,6 +493,30 @@
         .success-text {
             color: #999;
             font-size: 16px;
+            margin-bottom: 32px;
+        }
+
+        .close-button {
+            margin-top: 32px;
+            padding: 16px 48px;
+            background: #CCFB55;
+            border: none;
+            border-radius: 50px;
+            color: #000000;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(204, 251, 85, 0.3);
+        }
+
+        .close-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(204, 251, 85, 0.4);
+        }
+
+        .close-button:active {
+            transform: translateY(0);
         }
     </style>
 </head>
@@ -604,6 +628,9 @@
                 Ваша заявка отправлена.<br>
                 Подписка будет активирована в ближайшее время.
             </div>
+            <button class="close-button" onclick="if(window.Telegram?.WebApp) window.Telegram.WebApp.close();">
+                Закрыть
+            </button>
         </div>
     </div>
 
@@ -807,9 +834,9 @@
                     document.getElementById('paymentForm').style.display = 'none';
                     document.getElementById('successScreen').classList.add('show');
                     
+                    // Автоматически закрываем через 10 секунд (без алерта)
                     if (tg) {
-                        tg.showAlert('Заявка отправлена!');
-                        setTimeout(() => tg.close(), 3000);
+                        setTimeout(() => tg.close(), 10000);
                     }
                 } else {
                     throw new Error('Ошибка отправки');
