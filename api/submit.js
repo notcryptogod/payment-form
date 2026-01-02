@@ -41,6 +41,47 @@ export default async function handler(req, res) {
       submitted_at
     } = data;
 
+    // ✅ ПРОВЕРКА hCAPTCHA
+    if (!captcha) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Капча не пройдена' 
+      });
+    }
+
+    // Верифицируем hCaptcha токен
+    const hcaptchaSecret = process.env.HCAPTCHA_SECRET;
+    
+    if (!hcaptchaSecret) {
+      console.error('❌ HCAPTCHA_SECRET not configured in environment variables');
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Server configuration error. Please contact administrator.' 
+      });
+    }
+    
+    const verifyUrl = `https://hcaptcha.com/siteverify`;
+    
+    const hcaptchaResponse = await fetch(verifyUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `secret=${hcaptchaSecret}&response=${captcha}`
+    });
+
+    const hcaptchaData = await hcaptchaResponse.json();
+    
+    if (!hcaptchaData.success) {
+      console.error('❌ hCaptcha verification failed:', hcaptchaData);
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Проверка капчи не удалась. Попробуйте снова.' 
+      });
+    }
+
+    console.log('✅ hCaptcha verified successfully');
+
     console.log('Received data:', {
       telegram_username,
       discord_username,
