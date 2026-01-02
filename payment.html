@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Form</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
     <style>
         * {
             margin: 0;
@@ -419,13 +419,13 @@
             justify-content: center;
         }
 
-        .g-recaptcha {
+        .h-captcha {
             transform: scale(0.95);
             transform-origin: center;
         }
 
         @media (max-width: 400px) {
-            .g-recaptcha {
+            .h-captcha {
                 transform: scale(0.85);
             }
         }
@@ -637,7 +637,7 @@
 
             <!-- CAPTCHA -->
             <div class="captcha-section">
-                <div class="g-recaptcha" data-sitekey="6LfieT0sAAAAANBVq_Jk50NJMU8x0jIWkkmv2_L1" data-theme="dark"></div>
+                <div class="h-captcha" data-sitekey="1bf01844-f3a6-4058-a45a-413c538c0342" data-theme="dark"></div>
             </div>
 
             <!-- Кнопка отправки -->
@@ -787,8 +787,8 @@
             const errorMessage = document.getElementById('errorMessage');
             const submitBtn = document.getElementById('submitBtn');
             
-            // Проверка Google reCAPTCHA
-            const captchaResponse = grecaptcha.getResponse();
+            // Проверка hCaptcha
+            const captchaResponse = hcaptcha.getResponse();
             if (!captchaResponse) {
                 errorMessage.textContent = 'Пожалуйста, подтвердите, что вы не робот';
                 errorMessage.classList.add('show');
