@@ -28,20 +28,51 @@ export default async function handler(req, res) {
     const UPSTASH_URL = 'https://model-gnat-59147.upstash.io';
     const UPSTASH_TOKEN = 'AecLAAIncDFjODdjYTA1MTNiMTU0Mjc2OGZjOThjMTYxYjVkNGQ2ZXAxNTkxNDc';
 
-    // Получаем Discord username из Redis
-    const redisResponse = await fetch(`${UPSTASH_URL}/get/discord_username:${telegram_id}`, {
+    // Шаг 1: Получаем contact_id по telegram_id
+    const telegramKeyResponse = await fetch(`${UPSTASH_URL}/get/telegram:${telegram_id}`, {
       headers: {
         'Authorization': `Bearer ${UPSTASH_TOKEN}`
       }
     });
 
-    if (!redisResponse.ok) {
-      console.error('Redis error:', await redisResponse.text());
+    if (!telegramKeyResponse.ok) {
+      console.error('Telegram key not found');
       return res.status(200).json({ discord_username: null });
     }
 
-    const data = await redisResponse.json();
-    const discordUsername = data.result;
+    const telegramData = await telegramKeyResponse.json();
+    const contactId = telegramData.result;
+
+    if (!contactId) {
+      console.log('No contact_id found for telegram_id:', telegram_id);
+      return res.status(200).json({ discord_username: null });
+    }
+
+    // Шаг 2: Получаем данные пользователя по contact_id
+    const userDataResponse = await fetch(`${UPSTASH_URL}/get/user:${contactId}`, {
+      headers: {
+        'Authorization': `Bearer ${UPSTASH_TOKEN}`
+      }
+    });
+
+    if (!userDataResponse.ok) {
+      console.error('User data not found');
+      return res.status(200).json({ discord_username: null });
+    }
+
+    const userDataResult = await userDataResponse.json();
+    const userDataString = userDataResult.result;
+
+    if (!userDataString) {
+      console.log('No user data found for contact_id:', contactId);
+      return res.status(200).json({ discord_username: null });
+    }
+
+    // Парсим JSON данные пользователя
+    const userData = JSON.parse(userDataString);
+    const discordUsername = userData.discord_username;
+
+    console.log('Discord username found:', discordUsername);
 
     return res.status(200).json({ 
       discord_username: discordUsername || null
