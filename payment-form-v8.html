@@ -620,8 +620,21 @@
                 document.getElementById('telegram_username').value = '@' + telegramUser.username;
             }
 
-            // Автозаполнение Discord (если есть в данных)
-            // Здесь можно добавить логику получения Discord username
+            // Автозаполнение Discord username
+            if (telegramUser?.id) {
+                fetch(`https://payment-form-beta.vercel.app/api/get-discord?telegram_id=${telegramUser.id}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.discord_username) {
+                            document.getElementById('discord_username').value = data.discord_username;
+                            // Делаем поле readonly если Discord найден
+                            document.getElementById('discord_username').readOnly = true;
+                        }
+                    })
+                    .catch(error => {
+                        console.log('Discord not found, user can enter manually');
+                    });
+            }
         }
 
         // Выбор периода подписки
