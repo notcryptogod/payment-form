@@ -23,6 +23,31 @@
             overflow-x: hidden;
         }
 
+        /* Кастомный скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #CCFB55;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b8e34a;
+        }
+
+        /* Для Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #CCFB55 #1a1a1a;
+        }
+
         /* Анимированный градиентный фон */
         body::before {
             content: '';
@@ -831,6 +856,7 @@
                     errorMessage.textContent = '';
                     
                     // Показываем успех
+                    document.querySelector('.header').style.display = 'none'; // Скрываем заголовок
                     document.getElementById('paymentForm').style.display = 'none';
                     document.getElementById('successScreen').classList.add('show');
                     
