@@ -56,6 +56,17 @@ export default async function handler(req, res) {
       try {
         const fileBuffer = Buffer.from(file.data, 'base64');
         
+        // Конвертируем время в киевский часовой пояс (UTC+2)
+        const submittedDate = new Date(submitted_at);
+        const kyivTime = submittedDate.toLocaleString('ru-RU', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'Europe/Kiev'
+        });
+        
         // Формируем сообщение
         const message = `💰 *Новая заявка на оплату!*
 
@@ -64,7 +75,7 @@ export default async function handler(req, res) {
 📅 *Период:* ${subscription_period}
 💵 *Цена:* ${subscription_price}
 
-⏰ *Дата:* ${new Date(submitted_at).toLocaleString('ru-RU')}`;
+⏰ *Дата:* ${kyivTime}`;
 
         // Отправляем фото с подписью в Telegram
         const telegramForm = new FormData();
