@@ -243,11 +243,22 @@
             cursor: pointer;
             transition: all 0.3s;
             background: rgba(204, 251, 85, 0.02);
+            position: relative;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .file-upload-area:hover {
             background: rgba(204, 251, 85, 0.05);
             border-color: #CCFB55;
+        }
+
+        .file-upload-area.has-file {
+            padding: 0;
+            overflow: hidden;
         }
 
         .file-upload-icon {
@@ -272,11 +283,72 @@
             display: none;
         }
 
+        .file-preview {
+            display: none;
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            position: relative;
+        }
+
+        .file-preview.show {
+            display: block;
+        }
+
+        .file-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+
+        .file-preview-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-preview-name {
+            color: #CCFB55;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .file-remove-btn {
+            background: rgba(255, 59, 48, 0.9);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-remove-btn:hover {
+            background: rgba(255, 59, 48, 1);
+        }
+
+        .file-upload-content {
+            transition: opacity 0.3s;
+        }
+
+        .file-upload-content.hidden {
+            display: none;
+        }
+
         .file-name {
             margin-top: 12px;
             font-size: 14px;
             color: #CCFB55;
             text-align: center;
+            display: none;
         }
 
         /* Чекбокс согласия */
@@ -481,10 +553,19 @@
             <!-- Загрузка файла -->
             <div class="file-upload">
                 <label class="section-title">Скриншот оплаты <span class="required">*</span></label>
-                <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
-                    <div class="file-upload-icon">↑</div>
-                    <div class="file-upload-text">Выберите или перетащите файл</div>
-                    <div class="file-upload-hint">Файл не более 10 МБ</div>
+                <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                    <div class="file-upload-content" id="fileUploadContent">
+                        <div class="file-upload-icon">↑</div>
+                        <div class="file-upload-text">Выберите или перетащите файл</div>
+                        <div class="file-upload-hint">Файл не более 10 МБ</div>
+                    </div>
+                    <div class="file-preview" id="filePreview">
+                        <img id="previewImage" src="" alt="Preview">
+                        <div class="file-preview-overlay">
+                            <span class="file-preview-name" id="previewFileName"></span>
+                            <button type="button" class="file-remove-btn" onclick="event.stopPropagation(); removeFile();">Удалить</button>
+                        </div>
+                    </div>
                     <input type="file" id="fileInput" accept="image/*,.pdf" required>
                 </div>
                 <div class="file-name" id="fileName"></div>
@@ -560,6 +641,19 @@
         // Загрузка файла
         const fileInput = document.getElementById('fileInput');
         const fileName = document.getElementById('fileName');
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileUploadContent = document.getElementById('fileUploadContent');
+        const filePreview = document.getElementById('filePreview');
+        const previewImage = document.getElementById('previewImage');
+        const previewFileName = document.getElementById('previewFileName');
+        
+        function removeFile() {
+            fileInput.value = '';
+            fileName.textContent = '';
+            fileUploadContent.classList.remove('hidden');
+            filePreview.classList.remove('show');
+            fileUploadArea.classList.remove('has-file');
+        }
         
         fileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -571,7 +665,22 @@
                     fileName.textContent = '';
                     return;
                 }
-                fileName.textContent = '📎 ' + file.name;
+                
+                // Показываем превью для изображений
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImage.src = e.target.result;
+                        previewFileName.textContent = file.name;
+                        fileUploadContent.classList.add('hidden');
+                        filePreview.classList.add('show');
+                        fileUploadArea.classList.add('has-file');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // Для PDF просто показываем название
+                    fileName.textContent = '📎 ' + file.name;
+                }
             }
         });
 
