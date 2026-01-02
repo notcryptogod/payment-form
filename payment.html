@@ -833,7 +833,7 @@
                     data: fileBase64
                 } : null,
                 agreement: true,
-                captcha: true,
+                captcha: captchaResponse, // ✅ Передаём реальный токен hCaptcha
                 telegram_user_id: tg?.initDataUnsafe?.user?.id || null,
                 telegram_first_name: tg?.initDataUnsafe?.user?.first_name || null,
                 submitted_at: new Date().toISOString()
